@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Hero Section -->
+  <section class="hero-section position-relative overflow-hidden">
+    <!-- Background Animation -->
+    <div class="hero-background">
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
+      <div class="floating-shape shape-4"></div>
+    </div>
+    
+    <div class="container">
+      <div class="row align-items-center min-vh-75 py-5">
+        <!-- Text Content -->
+        <div class="col-lg-6 col-md-10 mx-auto text-center text-lg-start mb-5 mb-lg-0">
+          <div class="hero-content">
+            <!-- Badge -->
+            <div class="badge-container mb-4">
+              <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                <i class="bi bi-stars me-2"></i>AI-Powered Learning Assistant
+              </span>
+            </div>
+            
+            <!-- Main Heading -->
+            <h1 class="hero-title display-3 fw-bold mb-4">
+              Your Personal
+              <span class="text-gradient">Study Companion</span>
+            </h1>
+            
+            <!-- Description -->
+            <p class="hero-description lead mb-5">
+              Sign up, set your Gemini API key, and chat privately with our intelligent assistant. 
+              Get instant help with your coursework, assignments, and study questions.
+              {% if current_user.is_authenticated %}
+                <span class="d-block mt-2 fw-semibold text-success">Welcome back! Ready to continue learning?</span>
+              {% else %}
+                <span class="d-block mt-2 fw-semibold">Admin dashboard available for user monitoring and chat logs.</span>
+              {% endif %}
+            </p>
+            
+            <!-- CTA Buttons -->
+            <div class="hero-actions">
+              {% if not current_user.is_authenticated %}
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                  <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 py-3 rounded-pill shadow">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Get Started Free
+                  </a>
+                  <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg px-4 py-3 rounded-pill">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                  </a>
+                </div>
+              {% else %}
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                  <a href="{{ url_for('student_chat') }}" class="btn btn-primary btn-lg px-4 py-3 rounded-pill shadow">
+                    <i class="bi bi-chat-dots me-2"></i>Start Chatting
+                  </a>
+                  <a href="{{ url_for('set_api_key') }}" class="btn btn-outline-primary btn-lg px-4 py-3 rounded-pill">
+                    <i class="bi bi-key me-2"></i>Manage API Key
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+            
+            <!-- Stats -->
+            <div class="hero-stats mt-5 pt-4">
+              <div class="row g-4">
+                <div class="col-4">
+                  <div class="stat-item">
+                    <div class="stat-number h4 fw-bold text-primary">24/7</div>
+                    <div class="stat-label small">Available</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="stat-item">
+                    <div class="stat-number h4 fw-bold text-primary">Instant</div>
+                    <div class="stat-label small">Responses</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="stat-item">
+                    <div class="stat-number h4 fw-bold text-primary">Secure</div>
+                    <div class="stat-label small">Private Chats</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Visual Element -->
+        <div class="col-lg-6 text-center">
+          <div class="hero-visual position-relative">
+            <!-- Animated Chat Bubble -->
+            <div class="chat-bubble-container">
+              <div class="chat-bubble user-bubble animate-float">
+                <div class="bubble-content">
+                  <div class="d-flex align-items-center mb-2">
+                    <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                      <i class="bi bi-person text-white small"></i>
+                    </div>
+                    <span class="fw-semibold">Student</span>
+                  </div>
+                  <p class="mb-0">Can you explain quantum physics basics?</p>
+                </div>
+              </div>
+              
+              <div class="chat-bubble bot-bubble animate-float-delayed">
+                <div class="bubble-content">
+                  <div class="d-flex align-items-center mb-2">
+                    <div class="avatar-sm bg-success rounded-circle d-flex align-items-center justify-content-center me-2">
+                      <i class="bi bi-robot text-white small"></i>
+                    </div>
+                    <span class="fw-semibold">StudyBot</span>
+                  </div>
+                  <p class="mb-0">Of course! Quantum physics deals with behavior at atomic and subatomic levels...</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Floating Elements -->
+            <div class="floating-icon icon-1">
+              <i class="bi bi-book text-primary"></i>
+            </div>
+            <div class="floating-icon icon-2">
+              <i class="bi bi-cpu text-success"></i>
+            </div>
+            <div class="floating-icon icon-3">
+              <i class="bi bi-shield-check text-warning"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section py-5 bg-light">
+    <div class="container">
+      <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+          <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+          <p class="lead text-muted">Simple steps to enhance your learning experience</p>
+        </div>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="feature-card card border-0 shadow-sm h-100">
+            <div class="card-body text-center p-4">
+              <div class="feature-icon bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                <i class="bi bi-person-plus text-primary fs-3"></i>
+              </div>
+              <h4 class="fw-bold">1. Sign Up</h4>
+              <p class="text-muted">Create your free account in less than a minute</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="feature-card card border-0 shadow-sm h-100">
+            <div class="card-body text-center p-4">
+              <div class="feature-icon bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                <i class="bi bi-key text-success fs-3"></i>
+              </div>
+              <h4 class="fw-bold">2. Set API Key</h4>
+              <p class="text-muted">Configure your Gemini API key for personalized AI assistance</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="feature-card card border-0 shadow-sm h-100">
+            <div class="card-body text-center p-4">
+              <div class="feature-icon bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                <i class="bi bi-chat-heart text-info fs-3"></i>
+              </div>
+              <h4 class="fw-bold">3. Start Learning</h4>
+              <p class="text-muted">Ask questions and get instant, intelligent responses</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+/* Hero Section Styles */
+.hero-section {
+  background: linear-gradient(135deg, #f5f7fb 0%, #e4edf5 100%);
+  padding: 4rem 0;
+  position: relative;
+}
+
+.min-vh-75 {
+  min-height: 75vh;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(79, 214, 255, 0.1) 100%);
+  animation: float 6s ease-in-out infinite;
+}
+
+.shape-1 {
+  width: 120px;
+  height: 120px;
+  top: 10%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  left: 10%;
+  animation-delay: 2s;
+}
+
+.shape-3 {
+  width: 100px;
+  height: 100px;
+  top: 20%;
+  right: 10%;
+  animation-delay: 4s;
+}
+
+.shape-4 {
+  width: 60px;
+  height: 60px;
+  top: 70%;
+  right: 5%;
+  animation-delay: 1s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
+}
+
+.hero-title {
+  line-height: 1.2;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #4361ee, #4cc9f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-description {
+  color: #5a6c7d;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+/* Chat Bubbles */
+.chat-bubble-container {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.chat-bubble {
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  position: relative;
+  max-width: 320px;
+}
+
+.user-bubble {
+  background: white;
+  margin-left: auto;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.bot-bubble {
+  background: linear-gradient(135deg, #4361ee, #3f37c9);
+  color: white;
+  margin-right: auto;
+  border-bottom-left-radius: 0.5rem;
+}
+
+.animate-float {
+  animation: float-bubble 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-bubble 4s ease-in-out infinite 1s;
+}
+
+@keyframes float-bubble {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+}
+
+/* Floating Icons */
+.floating-icon {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  font-size: 1.2rem;
+  animation: float 5s ease-in-out infinite;
+}
+
+.icon-1 {
+  top: 10%;
+  right: 15%;
+  animation-delay: 0s;
+}
+
+.icon-2 {
+  bottom: 20%;
+  right: 5%;
+  animation-delay: 2.5s;
+}
+
+.icon-3 {
+  top: 40%;
+  left: 5%;
+  animation-delay: 1.5s;
+}
+
+/* Feature Cards */
+.feature-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+}
+
+/* Stats */
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-visual {
+    margin-top: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-description {
+    font-size: 1.1rem;
+  }
+  
+  .floating-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+}
+
+/* Animation for content */
+.hero-content, .hero-visual {
+  animation: fadeInUp 1s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
+<script>
+// Additional animation triggers
+document.addEventListener('DOMContentLoaded', function() {
+  // Animate feature cards on scroll
+  const featureCards = document.querySelectorAll('.feature-card');
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  featureCards.forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(card);
+  });
+  
+  // Add hover effect to buttons
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(button => {
+    button.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+    });
+    
+    button.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>User Details</h2>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Joined:</strong> {{ user.created_at.strftime('%Y-%m-%d') }}</p>
+    <p><strong>API Key:</strong> <span class="badge">{{ api_key_masked }}</span></p>
+    <p><strong>Admin:</strong> {{ 'Yes' if user.is_admin else 'No' }}</p>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn">Back to Dashboard</a>
+  </div>
+{% endblock %}

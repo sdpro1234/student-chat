@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="d-flex justify-content-end mb-3">
+      <a href="{{ url_for('admin_logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="h2 fw-bold text-dark mb-1">
+            <i class="bi bi-speedometer2 me-2 text-primary"></i>Admin Dashboard
+          </h1>
+          <p class="text-muted mb-0">Manage users, monitor activity, and export data</p>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" id="refreshData">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-download me-1"></i>Export
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>All Users CSV</a></li>
+              <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-excel me-2"></i>Activity Report</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#"><i class="bi bi-database me-2"></i>Full Backup</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stat-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="card-title text-uppercase text-muted small fw-bold mb-1">Total Users</h6>
+              <h2 class="fw-bold text-primary mb-0">{{ users|length }}</h2>
+              <p class="text-success small mb-0">
+                <i class="bi bi-arrow-up me-1"></i>Active
+              </p>
+            </div>
+            <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-people-fill text-primary fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stat-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="card-title text-uppercase text-muted small fw-bold mb-1">API Keys</h6>
+              <h2 class="fw-bold text-warning mb-0">{{ users|selectattr('encrypted_api_key')|list|length }}</h2>
+              <p class="text-muted small mb-0">Configured</p>
+            </div>
+            <div class="icon-wrapper bg-warning bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-key-fill text-warning fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stat-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="card-title text-uppercase text-muted small fw-bold mb-1">Today's Activity</h6>
+              <h2 class="fw-bold text-success mb-0">0</h2>
+              <p class="text-muted small mb-0">Chat sessions</p>
+            </div>
+            <div class="icon-wrapper bg-success bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-chat-dots-fill text-success fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stat-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="card-title text-uppercase text-muted small fw-bold mb-1">System Status</h6>
+              <h2 class="fw-bold text-info mb-0">Online</h2>
+              <p class="text-success small mb-0">
+                <i class="bi bi-check-circle me-1"></i>All systems normal
+              </p>
+            </div>
+            <div class="icon-wrapper bg-info bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-server text-info fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0 fw-bold">
+              <i class="bi bi-people me-2 text-primary"></i>Registered Users
+            </h5>
+            <div class="d-flex gap-2">
+              <div class="input-group input-group-sm" style="width: 250px;">
+                <span class="input-group-text bg-light border-end-0">
+                  <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0" placeholder="Search users..." id="userSearch">
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" id="filterToggle">
+                <i class="bi bi-funnel me-1"></i>Filter
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <!-- Filters -->
+          <div class="filter-section bg-light border-bottom p-3 d-none" id="filterSection">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">API Key Status</label>
+                <select class="form-select form-select-sm" id="apiKeyFilter">
+                  <option value="all">All</option>
+                  <option value="has_key">Has API Key</option>
+                  <option value="no_key">No API Key</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">Join Date</label>
+                <select class="form-select form-select-sm" id="dateFilter">
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">Sort By</label>
+                <select class="form-select form-select-sm" id="sortFilter">
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="name">Username A-Z</option>
+                </select>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-sm btn-outline-danger w-100" id="clearFilters">
+                  <i class="bi bi-x-circle me-1"></i>Clear Filters
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Users Table -->
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="usersTable">
+              <thead class="bg-light">
+                <tr>
+                  <th class="border-0 ps-4">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="selectAll">
+                    </div>
+                  </th>
+                  <th class="border-0 fw-semibold text-muted small text-uppercase">User</th>
+                  <th class="border-0 fw-semibold text-muted small text-uppercase">Email</th>
+                  <th class="border-0 fw-semibold text-muted small text-uppercase">API Key</th>
+                  <th class="border-0 fw-semibold text-muted small text-uppercase">Joined</th>
+                  <th class="border-0 fw-semibold text-muted small text-uppercase text-end pe-4">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for u in users %}
+                <tr class="user-row" data-user-id="{{ u.id }}">
+                  <td class="ps-4">
+                    <div class="form-check">
+                      <input class="form-check-input user-checkbox" type="checkbox" value="{{ u.id }}">
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+                        <i class="bi bi-person text-primary small"></i>
+                      </div>
+                      <div>
+                        <div class="fw-semibold">{{ u.username }}</div>
+                        <small class="text-muted">ID: {{ u.id }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="text-truncate" style="max-width: 200px;">{{ u.email }}</div>
+                  </td>
+                  <td>
+                    {% if u.encrypted_api_key %}
+                      <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                        <i class="bi bi-check-circle me-1"></i>Configured
+                      </span>
+                    {% else %}
+                      <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                        <i class="bi bi-x-circle me-1"></i>Missing
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="text-muted small">
+                      <div>{{ u.created_at.strftime('%Y-%m-%d') }}</div>
+                      <div>{{ u.created_at.strftime('%H:%M') }}</div>
+                    </div>
+                  </td>
+                  <td class="pe-4">
+                    <div class="d-flex justify-content-end gap-2">
+                      <a href="{{ url_for('admin_view_user', user_id=u.id) }}" 
+                         class="btn btn-sm btn-outline-primary" 
+                         data-bs-toggle="tooltip" 
+                         title="View User Details">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a href="{{ url_for('admin_export_chat', user_id=u.id) }}" 
+                         class="btn btn-sm btn-outline-success" 
+                         data-bs-toggle="tooltip" 
+                         title="Export Chat History">
+                        <i class="bi bi-download"></i>
+                      </a>
+                      <button class="btn btn-sm btn-outline-warning user-actions" 
+                              data-user-id="{{ u.id }}"
+                              data-bs-toggle="tooltip" 
+                              title="More Actions">
+                        <i class="bi bi-three-dots"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Footer -->
+          <div class="card-footer bg-white border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="text-muted small">
+                Showing <span id="showingCount">{{ users|length }}</span> of {{ users|length }} users
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-danger d-none" id="bulkDelete">
+                  <i class="bi bi-trash me-1"></i>Delete Selected
+                </button>
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-gear me-1"></i>Options
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Export Selected</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-envelope me-2"></i>Email Selected</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete Selected</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold mb-3">
+            <i class="bi bi-lightning me-2 text-warning"></i>Quick Actions
+          </h5>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <button class="btn btn-outline-primary w-100 h-100 p-3 quick-action">
+                <i class="bi bi-person-plus fs-2 mb-2 d-block"></i>
+                <span>Add User</span>
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-success w-100 h-100 p-3 quick-action">
+                <i class="bi bi-graph-up fs-2 mb-2 d-block"></i>
+                <span>View Analytics</span>
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-warning w-100 h-100 p-3 quick-action">
+                <i class="bi bi-bell fs-2 mb-2 d-block"></i>
+                <span>System Alerts</span>
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-info w-100 h-100 p-3 quick-action">
+                <i class="bi bi-database fs-2 mb-2 d-block"></i>
+                <span>Backup Data</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Actions Modal -->
+<div class="modal fade" id="userActionsModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">User Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="list-group list-group-flush">
+          <a href="#" class="list-group-item list-group-item-action">
+            <i class="bi bi-pencil me-2"></i>Edit User
+          </a>
+          <a href="#" class="list-group-item list-group-item-action">
+            <i class="bi bi-envelope me-2"></i>Send Email
+          </a>
+          <a href="#" class="list-group-item list-group-item-action">
+            <i class="bi bi-key me-2"></i>Reset API Key
+          </a>
+          <a href="#" class="list-group-item list-group-item-action text-danger">
+            <i class="bi bi-trash me-2"></i>Delete User
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+:root {
+  --primary-color: #4361ee;
+  --secondary-color: #3f37c9;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --info-color: #17a2b8;
+}
+
+/* Stat Cards */
+.stat-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stat-card:nth-child(1) { border-left-color: var(--primary-color); }
+.stat-card:nth-child(2) { border-left-color: var(--warning-color); }
+.stat-card:nth-child(3) { border-left-color: var(--success-color); }
+.stat-card:nth-child(4) { border-left-color: var(--info-color); }
+
+.icon-wrapper {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Table Styles */
+.table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.table td {
+  border-bottom: 1px solid #f8f9fa;
+  vertical-align: middle;
+}
+
+.user-row {
+  transition: all 0.3s ease;
+}
+
+.user-row:hover {
+  background-color: #f8f9fa;
+  transform: translateX(5px);
+}
+
+.avatar-sm {
+  width: 40px;
+  height: 40px;
+}
+
+/* Badge Styles */
+.badge {
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+}
+
+/* Quick Actions */
+.quick-action {
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+}
+
+.quick-action:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Filter Section */
+.filter-section {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading Animation */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.loading {
+  animation: pulse 1.5s infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .input-group {
+    width: 100% !important;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .avatar-sm {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Custom Scrollbar */
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Checkbox Animation */
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.form-check-input {
+  transition: all 0.3s ease;
+}
+
+/* Button Animations */
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize tooltips
+  const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+
+  // Filter toggle
+  const filterToggle = document.getElementById('filterToggle');
+  const filterSection = document.getElementById('filterSection');
+  
+  if (filterToggle && filterSection) {
+    filterToggle.addEventListener('click', function() {
+      filterSection.classList.toggle('d-none');
+      this.innerHTML = filterSection.classList.contains('d-none') 
+        ? '<i class="bi bi-funnel me-1"></i>Filter' 
+        : '<i class="bi bi-funnel-fill me-1"></i>Filter';
+    });
+  }
+
+  // User search functionality
+  const userSearch = document.getElementById('userSearch');
+  const userRows = document.querySelectorAll('.user-row');
+  
+  if (userSearch) {
+    userSearch.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      let visibleCount = 0;
+      
+      userRows.forEach(row => {
+        const username = row.querySelector('.fw-semibold').textContent.toLowerCase();
+        const email = row.querySelector('.text-truncate').textContent.toLowerCase();
+        const isVisible = username.includes(searchTerm) || email.includes(searchTerm);
+        
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) visibleCount++;
+      });
+      
+      document.getElementById('showingCount').textContent = visibleCount;
+    });
+  }
+
+  // Select all functionality
+  const selectAll = document.getElementById('selectAll');
+  const userCheckboxes = document.querySelectorAll('.user-checkbox');
+  const bulkDelete = document.getElementById('bulkDelete');
+  
+  if (selectAll) {
+    selectAll.addEventListener('change', function() {
+      userCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+      });
+      updateBulkActions();
+    });
+  }
+
+  // Individual checkbox changes
+  userCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateBulkActions);
+  });
+
+  function updateBulkActions() {
+    const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+    if (checkedBoxes.length > 0) {
+      bulkDelete.classList.remove('d-none');
+    } else {
+      bulkDelete.classList.add('d-none');
+    }
+  }
+
+  // User actions modal
+  const userActionButtons = document.querySelectorAll('.user-actions');
+  const userActionsModal = new bootstrap.Modal(document.getElementById('userActionsModal'));
+  
+  userActionButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const userId = this.getAttribute('data-user-id');
+      // You can set modal content based on userId here
+      userActionsModal.show();
+    });
+  });
+
+  // Quick actions
+  const quickActions = document.querySelectorAll('.quick-action');
+  quickActions.forEach(action => {
+    action.addEventListener('click', function() {
+      const actionText = this.querySelector('span').textContent;
+      showToast(`Action triggered: ${actionText}`, 'info');
+    });
+  });
+
+  // Refresh data
+  const refreshBtn = document.getElementById('refreshData');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+      this.innerHTML = '<i class="bi bi-arrow-clockwise me-1 spinning"></i>Refreshing...';
+      this.disabled = true;
+      
+      // Simulate API call
+      setTimeout(() => {
+        this.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Refresh';
+        this.disabled = false;
+        showToast('Data refreshed successfully', 'success');
+      }, 1500);
+    });
+  }
+
+  // Clear filters
+  const clearFilters = document.getElementById('clearFilters');
+  if (clearFilters) {
+    clearFilters.addEventListener('click', function() {
+      document.getElementById('apiKeyFilter').value = 'all';
+      document.getElementById('dateFilter').value = 'all';
+      document.getElementById('sortFilter').value = 'newest';
+      userSearch.value = '';
+      
+      userRows.forEach(row => row.style.display = '');
+      document.getElementById('showingCount').textContent = userRows.length;
+      
+      showToast('Filters cleared', 'success');
+    });
+  }
+
+  // Toast notification function
+  function showToast(message, type = 'info') {
+    // Remove existing toasts
+    const existingToasts = document.querySelector('.toast-container');
+    if (existingToasts) existingToasts.remove();
+
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-${getToastIcon(type)} me-2"></i>
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    document.body.appendChild(toastContainer);
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+  }
+
+  function getToastIcon(type) {
+    const icons = {
+      'success': 'check-circle',
+      'danger': 'exclamation-triangle',
+      'warning': 'exclamation-triangle',
+      'info': 'info-circle'
+    };
+    return icons[type] || 'info-circle';
+  }
+
+  // Add spinning animation class
+  const style = document.createElement('style');
+  style.textContent = `
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(style);
+});
+</script>
+{% endblock %}
