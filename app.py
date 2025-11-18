@@ -11,17 +11,17 @@ load_dotenv()
 
 # Config
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") or "dev-secret-key"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///student_chatbot.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SECRET_KEY"] = "something"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///student_chatbot.db"
 
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# Flask 3+ FIX — Create DB tables on startup
+# Flask 3 FIX
 with app.app_context():
     db.create_all()
+
 
 # Fernet key
 FERNET_KEY = os.getenv("FERNET_KEY")
